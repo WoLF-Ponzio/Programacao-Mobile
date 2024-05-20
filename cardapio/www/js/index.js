@@ -1,57 +1,71 @@
-const pizzaria = `Pizza Ponzio`;
-const pizzaList = document.getElementById('pizza-list');
-var cardapio;
+document.addEventListener('deviceready', function() {
+    const PIZZARIA_ID = 'Pizza Ponzio';
+    const GET_URL = `https://pedidos-pizzaria.glitch.me/admin/pizzas/`+PIZZARIA_ID;
+    const POST_URL = 'https://pedidos-pizzaria.glitch.me/admin/pizza/';
+    let imageData = '';
 
-document.addEventListener('deviceready', onDeviceReady, false);
+    // Função para capturar a imagem
+    document.getElementById('capture-image').addEventListener('click', function() {
+        navigator.camera.getPicture(onSuccess, onFail, {
+            quality: 50,
+            destinationType: Camera.DestinationType.DATA_URL
+        });
 
-// função que é chamada quando o dispositivo carrega
-function onDeviceReady() {
-    document.getElementById("direita").addEventListener("click", paginar);
-    document.getElementById("esquerda").addEventListener("click", paginar);
-    document.getElementById("enviar").addEventListener("click", enviarPedido); 
-    carregarMenu();  
-}
+        function onSuccess(imageURI) {
+            imageData = 'data:image/jpeg;base64,' + imageURI;
+            const imagePreview = document.getElementById('image-preview');
+            imagePreview.style.backgroundImage = `url(${imageData})`;
+            imagePreview.style.backgroundSize = 'cover';
+            imagePreview.style.width = '100px';
+            imagePreview.style.height = '100px';
+        }
 
-// carrega os dados das pizzas do backend
-function carregarMenu() {
-    document.getElementById('load-pizzas').addEventListener('click', function() {
-        fetch(`https://pedidos-pizzaria.glitch.me/admin/pizzas/`+ pizzaria)
-            .then(response => response.json())
-            .then(data => {
-                pizzaList.innerHTML = ''; // Limpar lista antes de adicionar novas pizzas
-                data.pizzas.forEach(pizza => {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item';
-                    li.innerHTML = `
-                        <h3>${pizza.id}</h3>
-                        <h3>${pizza.pizzaria}</h3>
-                        <h3>${pizza.pizza}</h3>
-                        <p>Preço: ${pizza.preco}</p>
-                        <div style="background-image: url('${pizza.imagem}'); height: 100px; width: 100px; background-size: cover;"></div>
-                    `;
-                    pizzaList.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error fetching pizzas:', error));
+        function onFail(message) {
+            alert('Falha ao capturar a imagem: ' + message);
+        }
     });
-}
-// navega entre as pizzas do cardápio
-function novaPizza(){
-    
-}
 
+    // Função para exibir as pizzas
+    function fetchPizzas() {
+        cordova.plugin.http.get(GET_URL, {}, {}, function(response) {
+            const pizzas = JSON.parse(response.data);
+            const pizzaList = document.getElementById('pizza-list');
+            pizzaList.innerHTML = ''; // Limpar lista antes de adicionar
+            pizzas.forEach(pizza => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.textContent = `${pizza.pizza} - R$${pizza.preco}`;
+                pizzaList.appendChild(li);
+            });
+        }, function(response) {
+            console.error('Erro ao buscar pizzas:', response.error);
+        });
+    }
 
-function PizzaInfo(name, price) {
+    // Chamar fetchPizzas ao iniciar o app
+    fetchPizzas();
 
-}
+    // Função para cadastrar uma nova pizza
+    document.getElementById('pizza-form').addEventListener('submit', function(event) {
+        event.preventDefault();
 
+        const name = document.getElementById('name').value;
+        const price = document.getElementById('price').value;
 
+        const pizzaData = {
+            pizzaria: PIZZARIA_ID,
+            pizza: name,
+            preco: price,
+            imagem: imageData
+        };
 
-
-
-
-
-
-
-
-
+        cordova.plugin.http.setDataSerializer('json');
+        cordova.plugin.http.post(POST_URL, pizzaData, {}, function(response) {
+            alert('Pizza cadastrada com sucesso!');
+            // Atualize a lista de pizzas
+            fetchPizzas();
+        }, function(response) {
+            console.error('Erro ao cadastrar pizza:', response.error);
+        });
+    });
+}, false);
