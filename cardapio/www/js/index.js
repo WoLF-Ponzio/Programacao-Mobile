@@ -1,71 +1,72 @@
-document.addEventListener('deviceready', function() {
-    const PIZZARIA_ID = 'Pizza Ponzio';
-    const GET_URL = `https://pedidos-pizzaria.glitch.me/admin/pizzas/`+PIZZARIA_ID;
-    const POST_URL = 'https://pedidos-pizzaria.glitch.me/admin/pizza/';
-    let imageData = '';
+document.addEventListener('deviceready', onDeviceReady, false);
 
-    // Função para capturar a imagem
-    document.getElementById('capture-image').addEventListener('click', function() {
+const PIZZARIA_ID = 'Pizza Ponzio';
+let listaPizzasCadastradas = [];
+
+function onDeviceReady() {
+    carregarPizzas();
+    cordova.plugin.http.setDataSerializer('json');
+
+    document.getElementById('btnNovo').addEventListener('click', () => {
+        document.getElementById('applista').style.display = 'none';
+        document.getElementById('appcadastro').style.display = 'flex';
+    });
+
+    document.getElementById('btnCancelar').addEventListener('click', () => {
+        document.getElementById('applista').style.display = 'flex';
+        document.getElementById('appcadastro').style.display = 'none';
+    });
+
+    document.getElementById('btnFoto').addEventListener('click', () => {
         navigator.camera.getPicture(onSuccess, onFail, {
             quality: 50,
             destinationType: Camera.DestinationType.DATA_URL
         });
 
-        function onSuccess(imageURI) {
-            imageData = 'data:image/jpeg;base64,' + imageURI;
-            const imagePreview = document.getElementById('image-preview');
-            imagePreview.style.backgroundImage = `url(${imageData})`;
-            imagePreview.style.backgroundSize = 'cover';
-            imagePreview.style.width = '100px';
-            imagePreview.style.height = '100px';
+        function onSuccess(imageData) {
+            const image = document.getElementById('imagem');
+            image.style.backgroundImage = 'url(data:image/jpeg;base64,' + imageData + ')';
         }
 
         function onFail(message) {
-            alert('Falha ao capturar a imagem: ' + message);
+            alert('Failed because: ' + message);
         }
     });
 
-    // Função para exibir as pizzas
-    function fetchPizzas() {
-        cordova.plugin.http.get(GET_URL, {}, {}, function(response) {
-            const pizzas = JSON.parse(response.data);
-            const pizzaList = document.getElementById('pizza-list');
-            pizzaList.innerHTML = ''; // Limpar lista antes de adicionar
-            pizzas.forEach(pizza => {
-                const li = document.createElement('li');
-                li.className = 'list-group-item';
-                li.textContent = `${pizza.pizza} - R$${pizza.preco}`;
-                pizzaList.appendChild(li);
-            });
-        }, function(response) {
-            console.error('Erro ao buscar pizzas:', response.error);
-        });
-    }
+    document.getElementById('btnSalvar').addEventListener('click', () => {
+        const pizza = document.getElementById('pizza').value;
+        const preco = document.getElementById('preco').value;
+        const imagem = document.getElementById('imagem').style.backgroundImage;
 
-    // Chamar fetchPizzas ao iniciar o app
-    fetchPizzas();
-
-    // Função para cadastrar uma nova pizza
-    document.getElementById('pizza-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const name = document.getElementById('name').value;
-        const price = document.getElementById('price').value;
-
-        const pizzaData = {
+        cordova.plugin.http.post('https://pedidos-pizzaria.glitch.me/admin/pizza/', {
             pizzaria: PIZZARIA_ID,
-            pizza: name,
-            preco: price,
-            imagem: imageData
-        };
-
-        cordova.plugin.http.setDataSerializer('json');
-        cordova.plugin.http.post(POST_URL, pizzaData, {}, function(response) {
-            alert('Pizza cadastrada com sucesso!');
-            // Atualize a lista de pizzas
-            fetchPizzas();
+            pizza: pizza,
+            preco: preco,
+            imagem: imagem
+        }, {}, function(response) {
+            alert('Pizza salva com sucesso!');
+            carregarPizzas();
+            document.getElementById('appcadastro').style.display = 'none';
+            document.getElementById('applista').style.display = 'flex';
         }, function(response) {
-            console.error('Erro ao cadastrar pizza:', response.error);
+            alert('Erro ao salvar pizza: ' + response.error);
         });
     });
-}, false);
+
+    document.getElementById('btnExcluir').addEventListener('click', () => {
+        const pizza = document.getElementById('pizza').value;
+
+        cordova.plugin.http.delete('https://pedidos-pizzaria.glitch.me/admin/pizza/' + PIZZARIA_ID + '/' + pizza, {}, {}, function(response) {
+            alert('Pizza excluída com sucesso!');
+            carregarPizzas();
+            document.getElementById('appcadastro').style.display = 'none';
+            document.getElementById('applista').style.display = 'flex';
+        }, function(response) {
+            alert('Erro ao excluir pizza: ' + response.error);
+        });
+    });
+
+    
+    
+}
+

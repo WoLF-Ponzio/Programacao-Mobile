@@ -2,42 +2,44 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src * data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src * data: content:;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css; media-src *; img-src * data: content:;">
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
         <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="css/index.css">
         <title>Ponzio's Pizza</title>
     </head>
 
     <body>
-        <div class="app">
-            <div class="container">
-                <h1>Pizzas Disponíveis</h1>
-                <ul id="pizza-list" class="list-group"></ul>
-                <h2>Cadastrar Nova Pizza</h2>
-                <form id="pizza-form">
-                    <div class="form-group">
-                        <label for="name">Nome:</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="price">Preço:</label>
-                        <input type="number" id="price" name="price" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="image">Imagem:</label>
-                        <button type="button" id="capture-image" class="btn btn-primary">Capturar Imagem</button>
-                        <div id="image-preview" style="margin-top: 10px;"></div>
-                    </div>
-                    <button type="submit" class="btn btn-success">Cadastrar</button>
-                </form>
+        <div class="app-lista" id="applista">
+            <div class="superior" id="listaPizzas"></div>
+            <div class="inferior">
+                <button class="botao-novo" id="btnNovo">Novo</button>
             </div>
         </div>
+    
+        <div class="app-cadastro" id="appcadastro">
+            <div class="imagem" id="imagem"></div>
+            <div class="form">
+                <div class="form-linha">
+                    <div class="form-linha-esq">Pizza:</div>
+                    <div class="form-linha-dir"><input type="text" id="pizza"></div>
+                </div>
+                <div class="form-linha">
+                    <div class="form-linha-esq">Preço:</div>
+                    <div class="form-linha-dir"><input type="text" id="preco"></div>
+                </div>
+            </div>
 
+            <div class="botoes">
+                <button class="botao" id="btnFoto">Foto</button>
+                <button class="botao" id="btnSalvar">Salvar</button>
+                <button class="botao" id="btnExcluir">Excluir</button>
+                <button class="botao" id="btnCancelar">Cancelar</button>
+            </div>
         </div>
         <script src="js/index.js"></script>
-        
     </body>
 </html>
