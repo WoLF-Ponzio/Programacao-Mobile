@@ -41,10 +41,9 @@ function carregarPizzas() {
 
 function carregarDadosPizza(id) {
     var pizzaSelecionada = listaPizzasCadastradas[id];
-    document.getElementById('id').value = pizzaSelecionada.id;
+    document.getElementById('id').value = pizzaSelecionada._id;
     document.getElementById('pizza').value = pizzaSelecionada.pizza;
     document.getElementById('preco').value = pizzaSelecionada.preco;
-
 
     var imageData;
     if (pizzaSelecionada.imagem && typeof pizzaSelecionada.imagem === 'string' && pizzaSelecionada.imagem.startsWith('data:image/jpeg;base64,')) {
@@ -70,6 +69,7 @@ document.getElementById('btnCancelar').addEventListener('click', function() {
 
 // Função para abrir a tela de cadastro de uma nova pizza
 function abrirCadastroNovaPizza() {
+    document.getElementById('id').value = '';
     document.getElementById('pizza').value = '';
     document.getElementById('preco').value = '';
     document.getElementById('imagem').style.backgroundImage = 'none';
@@ -93,7 +93,7 @@ document.getElementById('btnCancelar').addEventListener('click', function() {
 // Função para tirar uma foto da pizza
 document.getElementById('btnFoto').addEventListener('click', function() {
     var options = {
-        quality: 50,
+        quality: 25,
         destinationType: Camera.DestinationType.DATA_URL,
     };
 
@@ -121,6 +121,7 @@ document.getElementById('btnSalvar').addEventListener('click', function() {
 
     cordova.plugin.http.post('https://pedidos-pizzaria.glitch.me/admin/pizza/', formData, {}, function(response) {
         console.log('Pizza cadastrada com sucesso:', response.data);
+        alert('Pizza cadastrada com sucesso!');
         carregarPizzas();
 
         document.getElementById('applista').style.display = 'flex';
@@ -138,6 +139,7 @@ document.getElementById('btnExcluir').addEventListener('click', function() {
 
     cordova.plugin.http.delete(url, {}, {}, function(response) {
         console.log('Pizza excluída com sucesso:', response.data);
+        alert('Pizza excluída com sucesso!');
         carregarPizzas();
 
         document.getElementById('applista').style.display = 'flex';
