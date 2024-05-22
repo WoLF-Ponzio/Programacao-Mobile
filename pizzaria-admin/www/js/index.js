@@ -39,16 +39,49 @@ function carregarPizzas() {
     });
 }
 
-// Função para carregar os dados da pizza selecionada
 function carregarDadosPizza(id) {
+    var pizzaSelecionada = listaPizzasCadastradas[id];
+    document.getElementById('id').value = pizzaSelecionada.id;
+    document.getElementById('pizza').value = pizzaSelecionada.pizza;
+    document.getElementById('preco').value = pizzaSelecionada.preco;
 
+
+    var imageData;
+    if (pizzaSelecionada.imagem && typeof pizzaSelecionada.imagem === 'string' && pizzaSelecionada.imagem.startsWith('data:image/jpeg;base64,')) {
+        imageData = pizzaSelecionada.imagem.split(',')[1];
+    } else {
+        imageData = pizzaSelecionada.imagem;
+    }
+
+    document.getElementById('imagem').style.backgroundImage = "url('data:image/jpeg;base64," + imageData + "')";
+    document.getElementById('imagem').dataset.imageData = imageData; // Armazenar a imagem em base64
+    document.getElementById('btnSalvar').style.display = 'block';
+    document.getElementById('btnExcluir').style.display = 'block';
     document.getElementById('applista').style.display = 'none';
     document.getElementById('appcadastro').style.display = 'flex';
-    document.getElementById('id').value = id;
-    document.getElementById('pizza').value = listaPizzasCadastradas[id].pizza;
-    document.getElementById('preco').value = listaPizzasCadastradas[id].preco;
-    document.getElementById('imagem').style.backgroundImage = 'url(' + listaPizzasCadastradas[id].imagem + ')';
+    document.getElementById('appcadastro').dataset.id = id;
 }
+
+// Função para alternar entre as telas
+document.getElementById('btnCancelar').addEventListener('click', function() {
+    document.getElementById('applista').style.display = 'flex';
+    document.getElementById('appcadastro').style.display = 'none';
+});
+
+// Função para abrir a tela de cadastro de uma nova pizza
+function abrirCadastroNovaPizza() {
+    document.getElementById('pizza').value = '';
+    document.getElementById('preco').value = '';
+    document.getElementById('imagem').style.backgroundImage = 'none';
+    delete document.getElementById('imagem').dataset.imageData;
+
+    document.getElementById('btnSalvar').style.display = 'block';
+    document.getElementById('btnExcluir').style.display = 'none';
+    document.getElementById('applista').style.display = 'none';
+    document.getElementById('appcadastro').style.display = 'flex';
+}
+
+document.getElementById('btnNovo').addEventListener('click', abrirCadastroNovaPizza);
 
 // Função para cancelar e voltar de tela
 document.getElementById('btnCancelar').addEventListener('click', function() {
@@ -59,44 +92,37 @@ document.getElementById('btnCancelar').addEventListener('click', function() {
 
 // Função para tirar uma foto da pizza
 document.getElementById('btnFoto').addEventListener('click', function() {
-    // Configurações para a captura da foto
     var options = {
-        quality: 70,
-        destinationType: Camera.DestinationType.FILE_URI,
-        sourceType: Camera.PictureSourceType.CAMERA,
-        encodingType: Camera.EncodingType.JPEG,
-        mediaType: Camera.MediaType.PICTURE
+        quality: 50,
+        destinationType: Camera.DestinationType.DATA_URL,
     };
 
-    // Chamada à API do plugin da câmera para tirar a foto
-    navigator.camera.getPicture(function(imageUri) {
-        // Exibir a imagem capturada no elemento imagem
-        document.getElementById('imagem').style.backgroundImage = 'url(' + imageUri + ')';
+    navigator.camera.getPicture(function(imageData) {
+        document.getElementById('imagem').style.backgroundImage = "url('data:image/jpeg;base64," + imageData + "')";
+        document.getElementById('imagem').dataset.imageData = imageData; // Armazenar o URI da imagem para o envio
     }, function(message) {
         console.error('Erro ao tirar foto: ' + message);
     }, options);
 });
 
+
 // Função para salvar a pizza
 document.getElementById('btnSalvar').addEventListener('click', function() {
     var pizza = document.getElementById('pizza').value;
     var preco = document.getElementById('preco').value;
-    var imagem = document.getElementById('imagem').style.backgroundImage;
+    var imageData = document.getElementById('imagem').dataset.imageData;
 
-    var PIZZARIA_ID = 'Pizza Ponzio';
-    var url = 'https://pedidos-pizzaria.glitch.me/admin/pizza/';
-
-    // Efetuar um POST para salvar a nova pizza
-    cordova.plugin.http.post(url, {
+    var formData = {
         pizzaria: PIZZARIA_ID,
         pizza: pizza,
         preco: preco,
-        imagem: imagem
-    }, {}, function(response) {
+        imagem: imageData
+    };
+
+    cordova.plugin.http.post('https://pedidos-pizzaria.glitch.me/admin/pizza/', formData, {}, function(response) {
         console.log('Pizza cadastrada com sucesso:', response.data);
-        // Recarregar a lista de pizzas após o cadastro
         carregarPizzas();
-        // Voltar para a tela de lista após salvar
+
         document.getElementById('applista').style.display = 'flex';
         document.getElementById('appcadastro').style.display = 'none';
     }, function(response) {
@@ -106,14 +132,14 @@ document.getElementById('btnSalvar').addEventListener('click', function() {
 
 // Função para excluir a pizza
 document.getElementById('btnExcluir').addEventListener('click', function() {
-    var idPizza = document.getElementById('id').value;
-    var url = 'https://pedidos-pizzaria.glitch.me/admin/pizza/' + PIZZARIA_ID + '/' + idPizza;
+    var idPizza = document.getElementById('appcadastro').dataset.id;
+    var pizzaSelecionada = listaPizzasCadastradas[idPizza];
+    var url = 'https://pedidos-pizzaria.glitch.me/admin/pizza/' + PIZZARIA_ID + '/' + pizzaSelecionada.pizza;
 
-    // Efetuar uma requisição DELETE para excluir a pizza
     cordova.plugin.http.delete(url, {}, {}, function(response) {
         console.log('Pizza excluída com sucesso:', response.data);
-        alert('Pizza excluída com sucesso!');
         carregarPizzas();
+
         document.getElementById('applista').style.display = 'flex';
         document.getElementById('appcadastro').style.display = 'none';
     }, function(response) {
