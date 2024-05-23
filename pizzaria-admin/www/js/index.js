@@ -13,15 +13,10 @@ var listaPizzasCadastradas = [];
 function carregarPizzas() {
     var url = 'https://pedidos-pizzaria.glitch.me/admin/pizzas/' + PIZZARIA_ID;
 
-    // Efetuar um GET para obter as pizzas cadastradas
     cordova.plugin.http.get(url, {}, {}, function(response) {
         if (response.data !== "") {
             listaPizzasCadastradas = JSON.parse(response.data);
-
-            // Limpar a lista antes de adicionar as pizzas novamente
             document.getElementById('listaPizzas').innerHTML = '';
-
-            // Montar a lista na tela
             listaPizzasCadastradas.forEach(function(item, idx) {
                 var novo = document.createElement('div');
                 novo.classList.add('linha');
@@ -39,6 +34,7 @@ function carregarPizzas() {
     });
 }
 
+// Função para carregar os dados específicos da pizza
 function carregarDadosPizza(id) {
     var pizzaSelecionada = listaPizzasCadastradas[id];
     document.getElementById('id').value = pizzaSelecionada._id;
@@ -53,7 +49,7 @@ function carregarDadosPizza(id) {
     }
 
     document.getElementById('imagem').style.backgroundImage = "url('data:image/jpeg;base64," + imageData + "')";
-    document.getElementById('imagem').dataset.imageData = imageData; // Armazenar a imagem em base64
+    document.getElementById('imagem').dataset.imageData = imageData; 
     document.getElementById('btnSalvar').style.display = 'block';
     document.getElementById('btnExcluir').style.display = 'block';
     document.getElementById('applista').style.display = 'none';
@@ -81,6 +77,7 @@ function abrirCadastroNovaPizza() {
     document.getElementById('appcadastro').style.display = 'flex';
 }
 
+// Adiciona evento de click no botão de nova pizza
 document.getElementById('btnNovo').addEventListener('click', abrirCadastroNovaPizza);
 
 // Função para cancelar e voltar de tela
@@ -100,7 +97,7 @@ document.getElementById('btnFoto').addEventListener('click', function() {
     navigator.camera.getPicture(function(imageData) {
         compressImage("data:image/jpeg;base64," + imageData, 0.5, function(compressedImageData) {
             document.getElementById('imagem').style.backgroundImage = "url('" + compressedImageData + "')";
-            document.getElementById('imagem').dataset.imageData = compressedImageData.split(',')[1]; // Armazenar o URI da imagem para o envio
+            document.getElementById('imagem').dataset.imageData = compressedImageData.split(',')[1]; 
         });
     }, function(message) {
         console.error('Erro ao tirar foto: ' + message);
@@ -121,8 +118,6 @@ function compressImage(dataUrl, quality, callback) {
         callback(newDataUrl);
     };
 }
-
-
 
 // Função para salvar a pizza
 document.getElementById('btnSalvar').addEventListener('click', function() {
