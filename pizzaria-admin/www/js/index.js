@@ -93,17 +93,35 @@ document.getElementById('btnCancelar').addEventListener('click', function() {
 // Função para tirar uma foto da pizza
 document.getElementById('btnFoto').addEventListener('click', function() {
     var options = {
-        quality: 25,
+        quality: 75,
         destinationType: Camera.DestinationType.DATA_URL,
     };
 
     navigator.camera.getPicture(function(imageData) {
-        document.getElementById('imagem').style.backgroundImage = "url('data:image/jpeg;base64," + imageData + "')";
-        document.getElementById('imagem').dataset.imageData = imageData; // Armazenar o URI da imagem para o envio
+        compressImage("data:image/jpeg;base64," + imageData, 0.5, function(compressedImageData) {
+            document.getElementById('imagem').style.backgroundImage = "url('" + compressedImageData + "')";
+            document.getElementById('imagem').dataset.imageData = compressedImageData.split(',')[1]; // Armazenar o URI da imagem para o envio
+        });
     }, function(message) {
         console.error('Erro ao tirar foto: ' + message);
     }, options);
 });
+
+// Função para comprimir imagem
+function compressImage(dataUrl, quality, callback) {
+    var img = new Image();
+    img.src = dataUrl;
+    img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        var newDataUrl = canvas.toDataURL('image/jpeg', quality);
+        callback(newDataUrl);
+    };
+}
+
 
 
 // Função para salvar a pizza
