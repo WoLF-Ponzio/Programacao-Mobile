@@ -26,6 +26,7 @@ export default function FavoritesScreen() {
       favorites = favorites.filter(fav => fav.name !== university.name);
       await AsyncStorage.setItem('favorites', JSON.stringify(favorites));
       setFavorites(favorites);
+      alert('Universidade removida dos favoritos')
     } catch (error) {
       console.error(error);
     }
@@ -36,6 +37,7 @@ export default function FavoritesScreen() {
       {favorites.map((university, index) => (
         <View key={index} style={{ borderWidth: 1, padding: 10, marginBottom: 10 }}>
           <Text style={{paddingBottom: 3}}>{university.name}</Text>
+          <Text style={{paddingBottom: 3}}>{university.web_pages}</Text>
           <Button title="Remover" onPress={() => removeFromFavorites(university)} />
         </View>
       ))}
